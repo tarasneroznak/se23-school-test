@@ -4,11 +4,16 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 func subscriptionRoutes(rg *gin.RouterGroup) {
 	rg.POST("/subscribe", subscribeController)
 	rg.POST("/sendEmails", sendEmailsController)
+}
+
+type SubscribeForm struct {
+	Email string `form:"email" validate:"email,required"`
 }
 
 // @ID subscribe
@@ -23,6 +28,21 @@ func subscriptionRoutes(rg *gin.RouterGroup) {
 // @Failure	409	"Повертати, якщо e-mail вже є в базі даних (файловій)"
 // @Router /subscribe [post]
 func subscribeController(c *gin.Context) {
+	var form SubscribeForm
+	if err := c.ShouldBind(&form); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	validate := validator.New()
+	if err := validate.Struct(form); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	err := subscribe(form.Email)
+	if err != nil {
+		c.Status(http.StatusConflict)
+		return
+	}
 	c.Status(http.StatusOK)
 }
 
@@ -34,5 +54,10 @@ func subscribeController(c *gin.Context) {
 // @Success 200 "E-mailʼи відправлено"
 // @Router /sendEmails [post]
 func sendEmailsController(c *gin.Context) {
+	err := sendEmails()
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
 	c.Status(http.StatusOK)
 }
