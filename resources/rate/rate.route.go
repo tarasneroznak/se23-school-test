@@ -19,5 +19,6 @@ func rateRoutes(rg *gin.RouterGroup) {
 // @Failure	400	"Invalid status value"
 // @Router /rate [get]
 func rateController(c *gin.Context) {
-	c.JSON(http.StatusOK, 1)
+	rate := getBTCtoUAH()
+	c.JSON(http.StatusOK, rate)
 }
