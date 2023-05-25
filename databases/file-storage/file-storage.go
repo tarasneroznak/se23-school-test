@@ -22,15 +22,12 @@ func getFilepath(filename string) (string, error) {
 }
 
 func ReadFile(filename string) ([]string, error) {
-	if filename == "" {
-		return nil, errors.New("filename is empty")
-	}
 	fn, err := getFilepath(filename)
 	if err != nil {
 		return nil, err
 	}
 	data, err := os.ReadFile(fn)
-	if err := createFile(fn); err != nil {
+	if err != nil {
 		createFile(fn)
 	}
 	return strings.Split(strings.ReplaceAll(string(data), "\r\n", "\n"), "\n"), nil
@@ -46,7 +43,8 @@ func AppendToFile(filename string, text string) error {
 		return err
 	}
 	defer f.Close()
-	if _, err = f.WriteString(text + "\n"); err != nil {
+	_, err = f.WriteString(text + "\n")
+	if err != nil {
 		return err
 	}
 	return nil

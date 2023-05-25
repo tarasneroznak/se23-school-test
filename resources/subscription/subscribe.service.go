@@ -3,10 +3,21 @@ package subscription
 import (
 	"errors"
 	file_storage "main/databases/file-storage"
+
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
+type SubscribeConfig struct {
+	FileNameEmail string `env:"EMAIL_STORAGE_FILEMANE" env-default:"emails"`
+}
+
 func subscribe(email string) error {
-	emails, err := file_storage.ReadFile("emails")
+	var cfg SubscribeConfig
+	err := cleanenv.ReadEnv(&cfg)
+	if err != nil {
+		return err
+	}
+	emails, err := file_storage.ReadFile(cfg.FileNameEmail)
 	if err != nil {
 		return err
 	}
@@ -17,6 +28,5 @@ func subscribe(email string) error {
 	if emailsset[email] {
 		return errors.New("email already exists")
 	}
-	file_storage.AppendToFile("emails", email)
-	return nil
+	return file_storage.AppendToFile(cfg.FileNameEmail, email)
 }
